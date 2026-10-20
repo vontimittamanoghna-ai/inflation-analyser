@@ -1,0 +1,36 @@
+=== Preflight: application schema only; existing objects are preserved ===
+
+SCHEMA_NAME
+--------------------------------------------------------------------------------------------------------------------------------
+CONTAINER_NAME
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IIA_EVAL_20261020
+XEPDB1
+
+
+1 row selected.
+
+DECLARE
+*
+ERROR at line 1:
+ORA-20002: Project object names already exist. Inspect them; do not rerun setup. Use 07_verify.sql.
+ORA-06512: at line 13
+
+
+=== Preflight: application schema only; existing objects are preserved ===
+
+SCHEMA_NAME
+--------------------------------------------------------------------------------------------------------------------------------
+CONTAINER_NAME
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SYS
+CDB$ROOT
+
+
+1 row selected.
+
+DECLARE
+*
+ERROR at line 1:
+ORA-20001: Connect as a dedicated application user, not an administrator.
+ORA-06512: at line 5

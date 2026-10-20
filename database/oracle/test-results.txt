@@ -1,0 +1,373 @@
+=== Preflight: application schema only; existing objects are preserved ===
+
+SCHEMA_NAME
+--------------------------------------------------------------------------------------------------------------------------------
+CONTAINER_NAME
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IIA_EVAL_20261020
+XEPDB1
+
+
+1 row selected.
+
+
+PL/SQL procedure successfully completed.
+
+
+TABLESPACE_NAME                     BYTES  MAX_BYTES
+------------------------------ ---------- ----------
+USERS                                   0   20971520
+
+1 row selected.
+
+Preflight passed. Ensure the application user has a tablespace quota.
+=== Five entities, created in dependency order (Oracle 12c+) ===
+
+Table created.
+
+
+Table created.
+
+
+Table created.
+
+
+Table created.
+
+
+Table created.
+
+
+Index created.
+
+
+Comment created.
+
+
+Comment created.
+
+
+Comment created.
+
+=== Reusable analytical views ===
+
+View created.
+
+
+View created.
+
+
+View created.
+
+=== Business operations; callers control COMMIT and ROLLBACK ===
+
+Function created.
+
+No errors.
+
+Procedure created.
+
+No errors.
+
+Procedure created.
+
+No errors.
+
+Procedure created.
+
+No errors.
+
+Trigger created.
+
+No errors.
+=== SYNTHETIC teaching fixtures, not real market data ===
+
+1 row created.
+
+
+1 row created.
+
+
+1 row created.
+
+
+1 row created.
+
+Created demonstration report id=1
+
+PL/SQL procedure successfully completed.
+
+
+Commit complete.
+
+=== 1. Join and filter: Rice history in Bengaluru, inclusive date range ===
+
+PRODUCT_NAME    LOCATION     OBSERVED_ON           PRICE UNIT
+--------------- ------------ ------------ -------------- ----------
+Rice            Bengaluru    2026-01-01               42 1 kg
+Rice            Bengaluru    2026-02-01               45 1 kg
+Rice            Bengaluru    2026-03-01               44 1 kg
+Rice            Bengaluru    2026-04-01               47 1 kg
+Rice            Bengaluru    2026-05-01               50 1 kg
+Rice            Bengaluru    2026-06-01               49 1 kg
+Rice            Bengaluru    2026-07-01               52 1 kg
+Rice            Bengaluru    2026-08-01               53 1 kg
+Rice            Bengaluru    2026-09-01               54 1 kg
+
+9 rows selected.
+
+=== 2. Latest observation per product/location (dates may differ in real data) ===
+
+PRODUCT_NAME    LOCATION     OBSERVED_ON           PRICE UNIT
+--------------- ------------ ------------ -------------- ----------
+Cooking Oil     Bengaluru    2026-09-01              142 1 litre
+Cooking Oil     Chennai      2026-09-01            149.1 1 litre
+Electricity     Bengaluru    2026-09-01              8.5 1 kWh
+Electricity     Chennai      2026-09-01             8.93 1 kWh
+Milk            Bengaluru    2026-09-01               62 1 litre
+Milk            Chennai      2026-09-01             65.1 1 litre
+Petrol          Bengaluru    2026-09-01            104.5 1 litre
+Petrol          Chennai      2026-09-01           109.73 1 litre
+Rice            Bengaluru    2026-09-01               54 1 kg
+Rice            Chennai      2026-09-01             56.7 1 kg
+Tomato          Bengaluru    2026-09-01               32 1 kg
+Tomato          Chennai      2026-09-01             33.6 1 kg
+
+12 rows selected.
+
+=== 3. Consecutive available observations; row gaps are NOT calendar months ===
+
+PRODUCT_NAME    LOCATION     PREVIOUS_ON  OBSERVED_ON  PREVIOUS_PRICE          PRICE     CHANGE_PCT
+--------------- ------------ ------------ ------------ -------------- -------------- --------------
+Rice            Bengaluru    2026-01-01   2026-02-01               42             45         7.1429
+Rice            Bengaluru    2026-02-01   2026-03-01               45             44        -2.2222
+Rice            Bengaluru    2026-03-01   2026-04-01               44             47         6.8182
+Rice            Bengaluru    2026-04-01   2026-05-01               47             50          6.383
+Rice            Bengaluru    2026-05-01   2026-06-01               50             49             -2
+Rice            Bengaluru    2026-06-01   2026-07-01               49             52         6.1224
+Rice            Bengaluru    2026-07-01   2026-08-01               52             53         1.9231
+Rice            Bengaluru    2026-08-01   2026-09-01               53             54         1.8868
+
+8 rows selected.
+
+=== 4. Exact calendar endpoint comparison; NULL if either price is missing ===
+
+PRODUCT_NAME        CHANGE_PCT
+--------------- --------------
+Cooking Oil             5.1852
+Electricity               6.25
+Milk                    6.8966
+Petrol                   2.451
+Rice                   10.2041
+Tomato                -23.8095
+
+6 rows selected.
+
+=== 5. GROUP BY, aggregates and HAVING: like-for-like series only ===
+
+PRODUCT_NAME    LOCATION       OBSERVATIONS      MIN_PRICE      MAX_PRICE     MEAN_PRICE
+--------------- ------------ -------------- -------------- -------------- --------------
+Cooking Oil     Bengaluru                 9            120            142         130.11
+Cooking Oil     Chennai                   9            126          149.1         136.62
+Electricity     Bengaluru                 9              7            8.5            7.7
+Electricity     Chennai                   9           7.35           8.93           8.09
+Milk            Bengaluru                 9             50             62          55.44
+Milk            Chennai                   9           52.5           65.1          58.22
+Petrol          Bengaluru                 9             96          104.5         100.06
+Petrol          Chennai                   9          100.8         109.73         105.06
+Rice            Bengaluru                 9             42             54          48.44
+Rice            Chennai                   9           44.1           56.7          50.87
+Tomato          Bengaluru                 9             32             50          41.78
+Tomato          Chennai                   9           33.6           52.5          43.87
+
+12 rows selected.
+
+=== 6. Correlated subquery: latest price exceeds its own location-series mean ===
+
+PRODUCT_NAME    LOCATION              PRICE
+--------------- ------------ --------------
+Cooking Oil     Bengaluru               142
+Cooking Oil     Chennai               149.1
+Electricity     Bengaluru               8.5
+Electricity     Chennai                8.93
+Milk            Bengaluru                62
+Milk            Chennai                65.1
+Petrol          Bengaluru             104.5
+Petrol          Chennai              109.73
+Rice            Bengaluru                54
+Rice            Chennai                56.7
+
+10 rows selected.
+
+=== 7. Category measures: unweighted comparable series, NOT official CPI ===
+
+CATEGORY_NAM PERIOD_STA PERIOD_END INFLATION_RATE COMPARABLE_SERIES
+------------ ---------- ---------- -------------- -----------------
+Food         2026-01-01 2026-09-01         5.5238                 6
+Fuel         2026-01-01 2026-09-01         8.8566                 2
+Household    2026-01-01 2026-09-01        18.3333                 2
+Utilities    2026-01-01 2026-09-01        21.4626                 2
+
+4 rows selected.
+
+=== 8. Category coverage and stored summary ===
+
+   CATEGORY_ID CATEGORY_NAM  PRODUCT_COUNT OBSERVATION_COUNT FIRST_OBS LAST_OBSE
+-------------- ------------ -------------- ----------------- --------- ---------
+             1 Food                      3                54 01-JAN-26 01-SEP-26
+             2 Fuel                      1                18 01-JAN-26 01-SEP-26
+             3 Household                 1                18 01-JAN-26 01-SEP-26
+             4 Utilities                 1                18 01-JAN-26 01-SEP-26
+
+4 rows selected.
+
+
+     REPORT_ID REPORT_TYPE                    PERIOD_FRO PERIOD_TO  SUMMARY
+-------------- ------------------------------ ---------- ---------- --------------------------------------------------------------------------------------------------------------
+             1 PRICE_SUMMARY                  2026-01-01 2026-09-01 Demonstration dataset; not official CPI. Observations=108; products=6; locations=2. Range=2026-01-01 to
+                                                                    2026-09-01. Category measures use exact endpoint pairs and equal product/location weights.
+
+
+1 row selected.
+
+=== Transactional tests: all test DML rolled back, identity gaps are normal ===
+PASS NOT NULL
+PASS blank name CHECK
+PASS UNIQUE category
+PASS foreign key
+PASS positive price CHECK
+PASS unique daily observation
+PASS calendar date CHECK
+PASS active status CHECK
+PASS historical unit trigger
+PASS inflation period CHECK
+PASS inflation rate CHECK
+PASS report type CHECK
+PASS report range CHECK
+PASS referenced parent protected
+PASS invalid comparison dates
+PASS missing category endpoints
+PASS report procedure validation
+PASS Rice exact three-month change = 10.2041
+PASS missing endpoint returns NULL
+PASS 12 latest product/location series
+PASS latest Rice price and date
+PASS consecutive dated comparison
+PASS Food unweighted category change = 5.5238
+PASS refresh updates instead of duplicates
+PASS inactive product procedure
+PASS record price procedure
+PASS summary snapshot contains 108 observations
+ALL TESTS PASSED; test rows rolled back.
+
+PL/SQL procedure successfully completed.
+
+=== Object inventory, constraints, indexes, row counts and compilation ===
+
+OBJECT_TYPE     OBJECT_NAME                    STATUS
+--------------- ------------------------------ ---------
+FUNCTION        FN_PRICE_CHANGE                VALID
+PROCEDURE       PR_GENERATE_REPORT             VALID
+PROCEDURE       PR_RECORD_PRICE                VALID
+PROCEDURE       PR_REFRESH_INFLATION           VALID
+TABLE           CATEGORY                       VALID
+TABLE           INFLATION_DATA                 VALID
+TABLE           PRICE_HISTORY                  VALID
+TABLE           PRODUCT                        VALID
+TABLE           REPORT                         VALID
+TRIGGER         TRG_PRODUCT_UNIT_LOCK          VALID
+VIEW            V_CATEGORY_SUMMARY             VALID
+VIEW            V_LATEST_PRICES                VALID
+VIEW            V_PRICE_CHANGES                VALID
+
+13 rows selected.
+
+
+TABLE_NAME         CONSTRAINT_NAME              C STATUS    VALIDATED
+------------------ ---------------------------- - --------- -------------
+CATEGORY           SYS_C008267                  C ENABLED   VALIDATED
+CATEGORY           SYS_C008268                  C ENABLED   VALIDATED
+CATEGORY           CK_CATEGORY_NAME             C ENABLED   VALIDATED
+CATEGORY           PK_CATEGORY                  P ENABLED   VALIDATED
+CATEGORY           UQ_CATEGORY_NAME             U ENABLED   VALIDATED
+INFLATION_DATA     SYS_C008296                  C ENABLED   VALIDATED
+INFLATION_DATA     SYS_C008295                  C ENABLED   VALIDATED
+INFLATION_DATA     SYS_C008297                  C ENABLED   VALIDATED
+INFLATION_DATA     CK_INFLATION_RATE            C ENABLED   VALIDATED
+INFLATION_DATA     CK_INFLATION_PERIOD          C ENABLED   VALIDATED
+INFLATION_DATA     SYS_C008299                  C ENABLED   VALIDATED
+INFLATION_DATA     SYS_C008298                  C ENABLED   VALIDATED
+INFLATION_DATA     PK_INFLATION_DATA            P ENABLED   VALIDATED
+INFLATION_DATA     FK_INFLATION_CATEGORY        R ENABLED   VALIDATED
+INFLATION_DATA     UQ_INFLATION_PERIOD          U ENABLED   VALIDATED
+PRICE_HISTORY      CK_PRICE_DATE                C ENABLED   VALIDATED
+PRICE_HISTORY      CK_PRICE_TEXT                C ENABLED   VALIDATED
+PRICE_HISTORY      CK_PRICE_POSITIVE            C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008288                  C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008287                  C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008286                  C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008285                  C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008284                  C ENABLED   VALIDATED
+PRICE_HISTORY      SYS_C008283                  C ENABLED   VALIDATED
+PRICE_HISTORY      PK_PRICE_HISTORY             P ENABLED   VALIDATED
+PRICE_HISTORY      FK_PRICE_PRODUCT             R ENABLED   VALIDATED
+PRICE_HISTORY      UQ_PRICE_OBSERVATION         U ENABLED   VALIDATED
+PRODUCT            SYS_C008274                  C ENABLED   VALIDATED
+PRODUCT            SYS_C008272                  C ENABLED   VALIDATED
+PRODUCT            SYS_C008273                  C ENABLED   VALIDATED
+PRODUCT            SYS_C008275                  C ENABLED   VALIDATED
+PRODUCT            SYS_C008276                  C ENABLED   VALIDATED
+PRODUCT            SYS_C008277                  C ENABLED   VALIDATED
+PRODUCT            CK_PRODUCT_ACTIVE            C ENABLED   VALIDATED
+PRODUCT            CK_PRODUCT_TEXT              C ENABLED   VALIDATED
+PRODUCT            PK_PRODUCT                   P ENABLED   VALIDATED
+PRODUCT            FK_PRODUCT_CATEGORY          R ENABLED   VALIDATED
+PRODUCT            UQ_PRODUCT_DEFINITION        U ENABLED   VALIDATED
+REPORT             CK_REPORT_PERIOD             C ENABLED   VALIDATED
+REPORT             SYS_C008309                  C ENABLED   VALIDATED
+REPORT             SYS_C008310                  C ENABLED   VALIDATED
+REPORT             CK_REPORT_TYPE               C ENABLED   VALIDATED
+REPORT             SYS_C008307                  C ENABLED   VALIDATED
+REPORT             SYS_C008305                  C ENABLED   VALIDATED
+REPORT             SYS_C008306                  C ENABLED   VALIDATED
+REPORT             SYS_C008308                  C ENABLED   VALIDATED
+REPORT             PK_REPORT                    P ENABLED   VALIDATED
+
+47 rows selected.
+
+
+TABLE_NAME         INDEX_NAME                     UNIQUENES
+------------------ ------------------------------ ---------
+CATEGORY           PK_CATEGORY                    UNIQUE
+CATEGORY           UQ_CATEGORY_NAME               UNIQUE
+INFLATION_DATA     PK_INFLATION_DATA              UNIQUE
+INFLATION_DATA     UQ_INFLATION_PERIOD            UNIQUE
+PRICE_HISTORY      PK_PRICE_HISTORY               UNIQUE
+PRICE_HISTORY      UQ_PRICE_OBSERVATION           UNIQUE
+PRODUCT            IX_PRODUCT_CATEGORY            NONUNIQUE
+PRODUCT            PK_PRODUCT                     UNIQUE
+PRODUCT            UQ_PRODUCT_DEFINITION          UNIQUE
+REPORT             PK_REPORT                      UNIQUE
+REPORT             SYS_IL0000080142C00006$$       UNIQUE
+
+11 rows selected.
+
+
+ENTITY              ROW_COUNT
+-------------- --------------
+CATEGORY                    4
+PRODUCT                     6
+PRICE_HISTORY             108
+INFLATION_DATA              4
+REPORT                      1
+
+5 rows selected.
+
+
+no rows selected
+
+VERIFIED: 5 tables; demo counts 4/6/108/4/1; constraints enabled; no compilation errors.
+
+PL/SQL procedure successfully completed.
+
+=== Setup, demonstration reports and verification completed ===
