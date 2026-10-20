@@ -17,7 +17,7 @@ Date: October 20, 2026 (Asia/Calcutta).
   Before an interactive presentation, an authorized local DBA should select a
   private password with SQL*Plus PASSWORD as shown below.
 
-## Actual results
+## Historical full-run results
 
 `run_all.sql` executed from start to finish in IIA_EVAL_20261020 and returned exit
 code 0. The raw SQL*Plus spool is [test-results.txt](test-results.txt).
@@ -85,7 +85,7 @@ Utilities      21.4626                  2
 The rounded Chennai observations cause small differences from Bengaluru-only
 rates; category values are calculated from stored prices, not copied labels.
 
-## Presentation steps on this verified machine
+## Historical access instructions (not authorization to reset a password)
 
 Open SQL*Plus /nolog using the installed path in README.md. An authorized local
 DBA can set a private application password without placing it in SQL text:
@@ -120,3 +120,21 @@ follow the prerequisites and full runner instructions instead.
 - The optional interactive provisioning script was reviewed, but its hidden
   PASSWORD prompt was not automated. Equivalent application-user privileges and
   quota were actually used by the tested schemas.
+
+## Finalization recheck
+
+Fresh read-only queries on AARON-HP, instance xe, Oracle 21c, XEPDB1 confirmed
+IIA_EVAL_20261020 is OPEN; IIA_PROJECT does not exist. All 13 project objects are
+valid, counts remain 4/6/108/4/1, invalid/unvalidated constraints=0 and compilation
+errors=0. Exact-endpoint function outputs match the historical examples above.
+Actual output: [current-readonly-check.txt](current-readonly-check.txt).
+
+No application credential was available to the automation session. No password
+was requested, stored or reset. Scripts 05/06/07 were NOT rerun as the application
+user during finalization; the 27 PASS results above are historical evidence.
+Follow the existing-installation commands in README.md to capture a fresh run.
+The revised 07_verify.sql adds an explicit check for all 13 named objects; that
+new check has been source-reviewed but has not been executed as the application
+user. No DDL, setup, account provisioning or test DML ran during finalization.
+No SQL arithmetic defect was found. Synthetic category measures remain unweighted
+means of comparable product/location series, not official CPI.
