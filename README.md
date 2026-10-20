@@ -11,6 +11,14 @@ Run `database/oracle/run_all.sql` once in an empty dedicated Oracle application
 schema. For an installed demo, run only the reports, tests and verification scripts
 as documented there. No teardown or database reset is required.
 
-The React frontend is preserved and still uses sample data; it is not connected
-to Oracle. Run it from `frontend` with `npm ci` then `npm run dev` after ensuring
-Node.js/npm are available. No Oracle credentials belong in frontend code.
+The React dashboard uses the FastAPI integration described below. No Oracle
+credentials belong in frontend code.
+
+## FastAPI / React integration
+
+See [backend/README.md](backend/README.md) for private environment configuration,
+API contracts, startup and verification. The dashboard now loads Oracle-backed
+API responses and explicitly shows failures when the database is unavailable.
+The SQL*Plus component remains independently runnable; do not rerun its setup on
+the populated evaluation schema. Live browser-to-Oracle execution still requires
+valid application credentials; see backend test evidence for what was verified.

@@ -21,7 +21,35 @@ or live browser/database connection in this submission component.
 - Scripts contain no credentials. Do not place credentials in Git, screenshots,
   shell command arguments, SQL spools, or React/VITE environment variables.
 
-## Connection and exact execution order
+## Existing evaluation installation: use this path on this machine
+
+`IIA_EVAL_20261020` is the populated evaluation schema in `XEPDB1`.
+`IIA_PROJECT` is only the optional new-installation account and currently does
+not exist here. Do not run provisioning or `run_all.sql` against the evaluation
+installation. If its password is unavailable, stop and obtain authorized access
+privately; password changes require separate approval.
+
+Start SQL*Plus `/nolog`, then enter the password only at its hidden prompt:
+
+```sql
+CONNECT IIA_EVAL_20261020@//localhost:1521/XEPDB1
+SHOW USER
+SELECT SYS_CONTEXT('USERENV','CON_NAME') FROM dual;
+WHENEVER OSERROR EXIT FAILURE ROLLBACK
+WHENEVER SQLERROR EXIT FAILURE ROLLBACK
+SET SERVEROUTPUT ON
+SPOOL evaluation-demo.log
+@"D:\Projects\inflation-analyser\database\oracle\05_reports.sql"
+@"D:\Projects\inflation-analyser\database\oracle\06_tests.sql"
+@"D:\Projects\inflation-analyser\database\oracle\07_verify.sql"
+SPOOL OFF
+```
+
+Use a fresh session with no uncommitted work. Tests temporarily insert/update/delete
+fixtures and roll back their rows; identity counters can still advance. Verification
+is read-only and now also checks that all 13 named project objects exist.
+
+## Optional new installation: initial setup only
 
 In PowerShell (use your installed SQL*Plus path if needed):
 
@@ -84,10 +112,7 @@ This creates only `IIA_PROJECT`, with limited object-creation permissions and a 
 USERS quota. SQL*Plus `PASSWORD` prompts privately. If the user exists, stop and
 inspect it; do not delete it. Reconnect as the application user before setup.
 
-The tested local demo account is documented in `TEST_RESULTS.md`. Its test password
-was generated privately and is not stored in this repository. An authorized local
-DBA must use `PASSWORD IIA_DEMO_20261020` (or the fresh-run account documented there)
-inside XEPDB1 to choose a private demo password before connecting interactively.
+The existing evaluation account is `IIA_EVAL_20261020`; follow the existing-installation path above. Account provisioning or password recovery requires explicit authorization and is not part of verification.
 
 ## Data dictionary and relationships
 
@@ -205,16 +230,13 @@ The report insert is rolled back here so the demo still has one stored report.
 Terminate ordinary SQL with `;`. Finish PL/SQL blocks with `/` on its own line.
 Do not add `/` after an already executed INSERT: it executes the buffer again.
 
-## Minimal integration and submission scope
+## Application integration
 
-The current React UI needs no changes for a SQL*Plus DBMS demonstration. It remains
-an independent prototype: do not claim it loads Oracle data. Database-backed UI
-would require a server-side API/Oracle driver, connection pool and credentials
-kept outside Git. Proposed read-only endpoints: locations, categories, latest
-prices filtered by city/category/search, and dated product history. Use bind
-variables, server-side validation and a SELECT-only runtime account. The backend
-can query V_LATEST_PRICES and PRICE_HISTORY; browser code must never call SQL*Plus
-or connect directly to Oracle. This is documented future work, not a working API.
+The FastAPI adapter and React dashboard are documented in
+[../../backend/README.md](../../backend/README.md). They reuse the existing schema
+through read-only queries and FN_PRICE_CHANGE; no Oracle setup is needed. Live
+integration still requires privately configured application credentials. Historical
+SQL*Plus test results do not establish a live browser-to-Oracle connection.
 
 ## Evaluation checklist
 
@@ -227,7 +249,7 @@ or connect directly to Oracle. This is documented future work, not a working API
 - [x] PL/SQL function, procedures, exception handling and justified trigger.
 - [x] Constraint/relationship/business-rule tests with rolled-back test data.
 - [x] Compilation checks, object inventory, expected counts and SQL*Plus guide.
-- [ ] Browser/API integration (outside the implemented SQL*Plus demo).
+- [ ] Live browser/API/Oracle verification (requires application credentials).
 
 Official references: [SQL*Plus error handling](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/WHENEVER-SQLERROR.html),
 [implicit DDL commits](https://docs.oracle.com/en/database/oracle/oracle-database/19/tdddg/data-definition-language-ddl-statements.html).

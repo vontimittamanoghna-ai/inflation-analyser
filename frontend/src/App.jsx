@@ -1,50 +1,16 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapPin, Search, Home, ChartNoAxesColumnIncreasing,
   Lightbulb, Calculator, UserRound, ChevronRight
 } from "lucide-react";
 import {
-  LineChart, Line, ResponsiveContainer
+  LineChart, Line, ResponsiveContainer, XAxis, Tooltip
 } from "recharts";
 import "./App.css";
 
-const products = [
-  {
-    id: 1, name: "Rice", unit: "1 kg", category: "Food",
-    price: 54, change: 12.5, emoji: "🍚",
-    history: [42, 45, 44, 47, 50, 49, 52, 53, 54]
-  },
-  {
-    id: 2, name: "Milk", unit: "1 litre", category: "Food",
-    price: 62, change: 8.7, emoji: "🥛",
-    history: [50, 52, 51, 55, 54, 58, 57, 60, 62]
-  },
-  {
-    id: 3, name: "Tomato", unit: "1 kg", category: "Food",
-    price: 32, change: -18.4, emoji: "🍅",
-    history: [50, 47, 45, 48, 40, 42, 37, 35, 32]
-  },
-  {
-    id: 4, name: "Petrol", unit: "1 litre", category: "Fuel",
-    price: 104.5, change: 5.3, emoji: "⛽",
-    history: [96, 98, 97, 100, 99, 102, 101, 103, 104.5]
-  },
-  {
-    id: 5, name: "Cooking Oil", unit: "1 litre",
-    category: "Household", price: 142, change: 10.2,
-    emoji: "🛢️",
-    history: [120, 125, 123, 130, 127, 135, 131, 138, 142]
-  },
-  {
-    id: 6, name: "Electricity", unit: "1 unit",
-    category: "Utilities", price: 8.5, change: 9,
-    emoji: "💡",
-    history: [7, 7.3, 7.2, 7.7, 7.5, 8, 7.9, 8.2, 8.5]
-  }
-];
-
-const categories = ["All Goods", "Food", "Fuel", "Utilities", "Household"];
+import { get } from "./api";
+const emoji = { Rice: "🍚", Milk: "🥛", Tomato: "🍅", Petrol: "⛽", "Cooking Oil": "🛢️", Electricity: "💡" };
 
 const navigation = [
   { name: "Home", icon: Home },
@@ -59,17 +25,43 @@ function App() {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("Bengaluru");
   const [page, setPage] = useState("Home");
-  const [selectedProduct, setSelectedProduct] = useState(products[0]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      category === "All Goods" || product.category === category;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    return matchesCategory && matchesSearch;
-  });
+  const [categories, setCategories] = useState(["All Goods"]);
+  const [locations, setLocations] = useState([]);
+  const [categoryIds, setCategoryIds] = useState({});
+  const [result, setResult] = useState({ key: '', products: [], error: '' });
+  const [metadataError, setMetadataError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const key = JSON.stringify([category, search, location, retry]);
+  useEffect(() => {
+    const controller = new AbortController();
+    Promise.all([get('/categories', {}, controller.signal), get('/locations', {}, controller.signal)])
+      .then(([cats, cities]) => {
+        setCategories(['All Goods', ...cats.map(c => c.category_name)]);
+        setCategoryIds(Object.fromEntries(cats.map(c => [c.category_name, c.category_id])));
+        setLocations(cities.map(c => c.location));
+        setLocation(old => cities.some(c => c.location === old) ? old : (cities[0]?.location || ''));
+        setMetadataError('');
+      }).catch(e => { if (e.name !== 'AbortError') setMetadataError(e.message); });
+    return () => controller.abort();
+  }, [retry]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      if (!location) { setResult({ key, error: '', products: [] }); return; }
+      get('/prices/latest', { location, search, category_id: categoryIds[category] }, controller.signal)
+        .then(rows => setResult({ key, error: '', products: rows.map(p => ({
+          ...p, id: p.product_id, name: p.product_name, category: p.category_name,
+          change: p.change_pct, emoji: emoji[p.product_name] || '📦'
+        })).filter(p => category === 'All Goods' || p.category === category) }))
+        .catch(e => { if (e.name !== 'AbortError') setResult({ key, products: [], error: e.message }); });
+    }, 200);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [category, search, location, key, categoryIds]);
+  const loading = result.key !== key;
+  const filteredProducts = loading ? [] : result.products;
+  const error = metadataError || (!loading && result.error);
 
   function selectProduct(product) {
     setSelectedProduct(product);
@@ -93,11 +85,7 @@ function App() {
                 onChange={(e) => setLocation(e.target.value)}
                 aria-label="Select location"
               >
-                <option>Bengaluru</option>
-                <option>Chennai</option>
-                <option>Hyderabad</option>
-                <option>Mumbai</option>
-                <option>Delhi</option>
+                {locations.map(city => <option key={city}>{city}</option>)}
               </select>
             </div>
 
@@ -125,9 +113,12 @@ function App() {
 
             <div className="section-heading">
               <h2>Goods Overview</h2>
-              <span>Sample Data</span>
+              <span>Synthetic demo data</span>
             </div>
 
+            <p>Synthetic observations in INR; not official CPI. Charts show available dates.</p>
+            {loading && <p role="status">Loading prices…</p>}
+            {error && <div role="alert">{error} <button onClick={() => setRetry(r => r + 1)}>Retry</button></div>}
             <div className="product-list">
               {filteredProducts.map((product) => (
                 <button
@@ -141,18 +132,18 @@ function App() {
                     <h3>{product.name} <small>({product.unit})</small></h3>
                     <strong>₹{product.price.toFixed(2)}</strong>
                     <p className={product.change >= 0 ? "positive" : "negative"}>
-                      {product.change > 0 ? "+" : ""}
-                      {product.change}% vs last 3 months
+                      {product.change == null ? 'Three-month comparison unavailable' : `${product.change > 0 ? '+' : ''}${product.change}% vs ${product.comparison_date}`}
+                      <br />As of {product.observed_date}
                     </p>
                   </div>
 
                   <div className="mini-chart">
                     <ResponsiveContainer width="100%" height={45}>
                       <LineChart
-                        data={product.history.map((price, index) => ({
-                          index, price
-                        }))}
+                        data={product.history}
                       >
+                        <XAxis dataKey="observed_date" hide />
+                        <Tooltip />
                         <Line
                           type="monotone"
                           dataKey="price"
@@ -166,7 +157,7 @@ function App() {
                   <ChevronRight size={18} />
                 </button>
               ))}
-              {filteredProducts.length === 0 && (
+              {!loading && !error && filteredProducts.length === 0 && (
                 <p>No matching goods found.</p>
               )}
             </div>
@@ -176,7 +167,7 @@ function App() {
             <h2>{page}</h2>
             <p>
               {page === "Trends"
-                ? `${selectedProduct.name} price trend will appear here.`
+                ? `${selectedProduct?.name || "Select a product"}: view the dated chart on Home.`
                 : `${page} screen will be implemented next.`}
             </p>
           </div>

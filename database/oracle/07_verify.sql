@@ -28,6 +28,13 @@ DECLARE
     IF actual<>expected THEN RAISE_APPLICATION_ERROR(-20091,t||': expected '||expected||', got '||actual); END IF;
   END;
 BEGIN
+  SELECT COUNT(*) INTO n FROM user_objects WHERE
+    (object_type='TABLE' AND object_name IN ('CATEGORY','PRODUCT','PRICE_HISTORY','INFLATION_DATA','REPORT')) OR
+    (object_type='VIEW' AND object_name IN ('V_LATEST_PRICES','V_PRICE_CHANGES','V_CATEGORY_SUMMARY')) OR
+    (object_type='FUNCTION' AND object_name='FN_PRICE_CHANGE') OR
+    (object_type='PROCEDURE' AND object_name IN ('PR_RECORD_PRICE','PR_REFRESH_INFLATION','PR_GENERATE_REPORT')) OR
+    (object_type='TRIGGER' AND object_name='TRG_PRODUCT_UNIT_LOCK');
+  IF n<>13 THEN RAISE_APPLICATION_ERROR(-20096,'Expected all 13 named project objects; inspect object inventory.'); END IF;
   SELECT COUNT(*) INTO n FROM user_objects WHERE status='INVALID';
   IF n>0 THEN RAISE_APPLICATION_ERROR(-20092,'Invalid schema objects'); END IF;
   SELECT COUNT(*) INTO n FROM user_errors WHERE attribute='ERROR';
