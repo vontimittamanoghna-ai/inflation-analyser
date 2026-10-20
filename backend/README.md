@@ -72,7 +72,7 @@ Search is debounced 200ms; AbortController plus request keys prevent stale displ
 Only 50 latest series are shown by this small demo dashboard (6 in each demo city).
 Loading, error with Retry, empty and missing-baseline states are explicit. There
 are no fake success fallbacks. Icons are presentation-only mappings. Hover a
-mini-chart to see its observation date. Existing navigation placeholders remain.
+mini-chart to see its observation date. Trends displays the selected series. Insights ranks three-month changes and groups unweighted category means by matching dates. Calculator provides an explicitly assumed annual compound-cost scenario. Profile stores optional display name and preferred location in this browser only; no authentication or Oracle writes are added.
 
 Data is synthetic demonstration data; not market prices or official weighted CPI.
 Dates and units come from Oracle; percentage compares exact calendar endpoints

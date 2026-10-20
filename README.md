@@ -22,3 +22,8 @@ API responses and explicitly shows failures when the database is unavailable.
 The SQL*Plus component remains independently runnable; do not rerun its setup on
 the populated evaluation schema. Live browser-to-Oracle execution still requires
 valid application credentials; see backend test evidence for what was verified.
+
+The dashboard now includes dated Trends graphs, Oracle-backed Insights, an
+assumed-rate cost Calculator, and browser-local Profile preferences. See
+[frontend/FEATURES.md](frontend/FEATURES.md) and
+[frontend/TEST_RESULTS.md](frontend/TEST_RESULTS.md) for scope and verification.

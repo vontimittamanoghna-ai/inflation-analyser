@@ -231,3 +231,28 @@
 .placeholder p {
   color: #9eb2c1;
 }
+
+.trend-chart { width: 100%; height: 300px; min-width: 0; }
+.trends-panel { background: #122534; border-radius: 16px; padding: 16px 8px; }
+.trends-panel p { color: #aebfcb; font-size: 12px; }
+
+.feature-panel { padding: 18px 14px; background: #122534; border-radius: 16px; }
+.feature-panel p { color: #aebfcb; font-size: 13px; line-height: 1.6; }
+.feature-panel h2 { margin-top: 0; font-size: 21px; }
+.feature-panel h3 { font-size: 16px; }
+.feature-panel button, .trends-panel > button { background: #08e6b6; color: #04141d; border: 0; border-radius: 9px; padding: 10px 12px; cursor: pointer; }
+.feature-form { display: grid; gap: 15px; margin-top: 20px; }
+.feature-form label { display: grid; gap: 8px; font-size: 13px; }
+.feature-form input, .feature-form select { width: 100%; min-width: 0; padding: 12px; background: #071722; color: white; border: 1px solid #567282; border-radius: 8px; font: inherit; }
+.feature-panel button:focus-visible, .feature-form input:focus-visible, .feature-form select:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stats-grid > div, .summary-card { border: 1px solid #344859; border-radius: 10px; padding: 12px; margin: 12px 0; }
+.stats-grid strong { display: block; color: #08e6b6; font-size: 20px; }
+.stats-grid span { font-size: 11px; color: #aebfcb; }
+.insight-list { display: grid; gap: 8px; }
+.insight-list button { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: #071722; color: white; }
+.insight-list small { display: block; font-size: 10px; color: #aebfcb; margin-top: 6px; }
+.feature-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.feature-table caption { text-align: left; margin-bottom: 10px; }
+.feature-table th, .feature-table td { border-bottom: 1px solid #344859; padding: 10px 5px; text-align: right; overflow-wrap: anywhere; }
+.feature-table th:first-child, .feature-table td:first-child { text-align: left; }

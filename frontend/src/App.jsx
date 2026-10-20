@@ -10,6 +10,11 @@ import {
 import "./App.css";
 
 import { get } from "./api";
+import Trends from "./Trends";
+import Insights from "./Insights";
+import CostCalculator from "./CostCalculator";
+import Profile from "./Profile";
+import { readPreferences } from "./preferences";
 const emoji = { Rice: "🍚", Milk: "🥛", Tomato: "🍅", Petrol: "⛽", "Cooking Oil": "🛢️", Electricity: "💡" };
 
 const navigation = [
@@ -21,9 +26,10 @@ const navigation = [
 ];
 
 function App() {
+  const [preferences, setPreferences] = useState(readPreferences);
   const [category, setCategory] = useState("All Goods");
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState("Bengaluru");
+  const [location, setLocation] = useState(preferences.location || "Bengaluru");
   const [page, setPage] = useState("Home");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -63,6 +69,14 @@ function App() {
   const filteredProducts = loading ? [] : result.products;
   const error = metadataError || (!loading && result.error);
 
+  function applyPreferences(next) {
+    setPreferences(next);
+    setLocation(locations.includes(next.location) ? next.location : (locations[0] || ""));
+    setCategory("All Goods");
+    setSearch("");
+    setSelectedProduct(null);
+  }
+
   function selectProduct(product) {
     setSelectedProduct(product);
     setPage("Trends");
@@ -72,7 +86,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>▥ Inflation Impact Analyser</h1>
-        <p>Track prices. Understand changes. Plan better.</p>
+        <p>{preferences.name ? `${preferences.name}, track prices and plan better.` : "Track prices. Understand changes. Plan better."}</p>
       </header>
 
       <main className="app-content">
@@ -162,15 +176,14 @@ function App() {
               )}
             </div>
           </>
+        ) : page === "Trends" ? (
+          <Trends product={selectedProduct || filteredProducts[0]} onBack={() => setPage("Home")} />
+        ) : page === "Insights" ? (
+          <Insights location={location} onSelect={selectProduct} />
+        ) : page === "Calculator" ? (
+          <CostCalculator product={selectedProduct?.location === location ? selectedProduct : filteredProducts[0]} />
         ) : (
-          <div className="placeholder">
-            <h2>{page}</h2>
-            <p>
-              {page === "Trends"
-                ? `${selectedProduct?.name || "Select a product"}: view the dated chart on Home.`
-                : `${page} screen will be implemented next.`}
-            </p>
-          </div>
+          <Profile preferences={preferences} locations={locations} onSave={applyPreferences} />
         )}
       </main>
 
